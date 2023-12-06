@@ -1,3 +1,3 @@
 ~~~
-![](Images/GNCSimulatorFlow.png)
+![](Images/GNCSimulatorFlow.png?raw=true)
 ~~~
