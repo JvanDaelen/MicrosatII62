@@ -9,4 +9,8 @@ The second element is the guidance, which uses the Clohessy-Wiltshire equations 
 
 The third element is the control, which determines the error between the observed and desired state and what forces are needed to correct it.
 
-The last element is the dynamics, which uses the current state of the spacecraft and the control forces to determine the next state of the spacecraft.
+The last element is the dynamics, which uses an orbital dynamics propagator, the current state of the spacecraft and the control forces to determine the next state of the spacecraft.
+
+The format of the vectors passed between these elements is shown here:
+
+![](https://github.com/JvanDaelen/MicrosatII62/blob/main/Images/GNCSimulatorVectors.png?raw=true)
