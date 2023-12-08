@@ -1,0 +1,24 @@
+% PID controller
+
+% Input function
+
+% PID variables
+Kp = 1;
+Ki = 1;
+Kd = 0;
+Tf = 100;
+%Ts = 0.1;
+
+% PID function
+C = pid(Kp, Ki, Kd, Tf);
+
+% System
+num = [4];
+den = [1 2 10];
+sys = tf(num, den);
+
+% Feedback
+controlloop = feedback(C*sys,1);
+cl_num =  
+sys_ss = tf2ss(controlloop.Numerator, controlloop.Denominator);
+impulse(controlloop)
