@@ -5,7 +5,7 @@
 % PID variables
 Kp = 1;
 Ki = 1;
-Kd = 0;
+Kd = 1;
 Tf = 100;
 %Ts = 0.1;
 
@@ -19,6 +19,14 @@ sys = tf(num, den);
 
 % Feedback
 controlloop = feedback(C*sys,1);
-cl_num =  
-sys_ss = tf2ss(controlloop.Numerator, controlloop.Denominator);
+cl_num = cell2mat(controlloop.Numerator);
+cl_den = cell2mat(controlloop.Denominator);
+[A,B,C,D] = tf2ss(cl_num, cl_den);
+sys_ss = ss(A,B,C,D);
 impulse(controlloop)
+
+% Run response to initial condition
+t = 0:0.005:50;
+[y,t,x] = initial(sys_ss, [0.1,0,0], t);
+
+plot(t,y)

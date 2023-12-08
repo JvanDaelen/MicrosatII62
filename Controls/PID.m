@@ -5,8 +5,8 @@
 % PID variables
 Kp = 1;
 Ki = 1;
-Kd = 0;
-Tf = 100;
+Kd = 0.5;
+Tf = 0; % no noise filter, extra dimension in ss
 %Ts = 0.1;
 
 % PID function
