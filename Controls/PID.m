@@ -27,6 +27,6 @@ impulse(controlloop)
 
 % Run response to initial condition
 t = 0:0.005:50;
-[y,t,x] = initial(sys_ss, [1,0,0], t);
+[y,t,x] = initial(sys_ss, [1,1,0], t); % Initial conditions: [state (error), integral (int of error), derivative (der of error)]
 
 plot(t,y)
