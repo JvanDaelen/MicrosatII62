@@ -1,4 +1,4 @@
-%% 2-D LQR implementation
+%% 3-D LQR implementation
 
 close all
 
