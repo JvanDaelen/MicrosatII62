@@ -22,8 +22,10 @@ sys = tf(num, den);
 controlloop = feedback(C*sys,1);
 
 % Run response to initial condition
-t = 0:0.005:50;
-[y,t,x] = initial(ss_conversion(controlloop), x0, t);  % Initial conditions: [state (error), integral (int of error), derivative (der of error)]
+% t = 0:0.005:50;
+dt = 0.005;
+sys_ss = ss_conversion(controlloop);
+[y,t,x] = initial(sys_ss, x0, [0 dt]);  % Initial conditions: [state (error), integral (int of error), derivative (der of error)]
 
 plot(t,y)
 
