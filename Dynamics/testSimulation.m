@@ -1,8 +1,10 @@
-initialState = [6871000; 0; 0; 0; 7617; 0];
-initialEarthRotation = 0;
-dt = 100;
+initialState = [6871000; 0; 0; 0; 7617; 0]; % m and m/s
+initialEarthRotation = 0; % rad
+dt = 100; % s
 iterations = 1000;
 t = zeros(1, iterations);
+mass = 100; % kg
+force = 0.1; % N
 
 positionHistory = zeros(3, iterations);
 positionHistory(:,1) = initialState(1:3);
@@ -21,9 +23,8 @@ tic
 for i = 2:iterations
     disp(i)
     t(i) = t(i-1) + dt;
-    [state, acceleration] = propagateSpacecraft_RK4_SH(state, dt, earthRotation);
-    % [state, acceleration] = propagateSpacecraft_FE_Kepler(state, dt);
-    % [state, acceleration] = propagateSpacecraft_FE_SH(state, dt, earthRotation);
+    controlForce = force * state(4:6) / norm(state(4:6));
+    [state, acceleration] = propagateSpacecraft_RK4_SH(state, controlForce, mass, dt, earthRotation);
     positionHistory(:,i) = state(1:3);
     ECEFpositionHistory(:,i) = ECI2ECEF(state(1:3), earthRotation);
     accelerationHistory(:,i-1) = acceleration(1:3);
