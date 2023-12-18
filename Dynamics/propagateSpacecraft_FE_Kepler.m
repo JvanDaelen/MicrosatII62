@@ -1,4 +1,4 @@
-function newstate = propagateSpacecraftFE(state, dt)
+function [newstate, acceleration] = propagateSpacecraft_FE_Kepler(state, dt)
     % state/newstate is 6x1 array [x; y; z; u; v; w]
     % dt is timestep in seconds
 

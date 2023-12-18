@@ -1,4 +1,4 @@
-function newstate = propagateSpacecraftRK4(state, dt)
+function [newstate, acceleration] = propagateSpacecraft_RK4_Kepler(state, dt)
     % state/newstate is 6x1 array [x; y; z; u; v; w]
     % dt is timestep in seconds
 
@@ -39,4 +39,5 @@ function newstate = propagateSpacecraftRK4(state, dt)
     k4 = statedot;
 
     newstate = state + dt/6 * (k1 + 2 * k2 + 2 * k3 + k4);
+    acceleration = calculateAccelerationKepler(state);
 end
