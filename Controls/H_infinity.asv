@@ -1,7 +1,7 @@
 % H infinity controller
 
 % Physical parameters
-m = 5 ;%kg, change later to integration
+m = 5 %kg, change later to integration
 
 % State matrices
     A = [0    0   0   1  0  0; 
@@ -17,6 +17,10 @@ m = 5 ;%kg, change later to integration
          0    1/m 0;
          0    0   1/m];
     C = eye(6);
+        % [1 0 0 0
+        %  0 1 0 0
+        %  0 0 1 0
+        %  0 0 0 1];
     D = [0 0 0;
          0 0 0;
          0 0 0;
@@ -25,20 +29,19 @@ m = 5 ;%kg, change later to integration
          0 0 0];
 
 qcar = ss(A,B,C,D);
-qcar.StateName = {'x_pos';'y_pos';'z_pos';...
-          'x_vel';'y_vel';'z_vel'};
-qcar.InputName = {'f_x';'f_y';'f_z'};
-qcar.OutputName = {'x_vel';'y_vel';'z_vel';...
-          'x_acc';'y_acc';'z_acc'};
+qcar.StateName = {'body travel (m)';'body vel (m/s)';...
+          'wheel travel (m)';'wheel vel (m/s)'};
+qcar.InputName = {'r';'fs'};
+qcar.OutputName = {'xb';'sd';'ab'};
 
 % Nominal Actuator Model
-ActNom = tf(1, 1);
+ActNom = tf(1, [1/60 1]);
 ActNom.InputName = 'u';
 ActNom.OutputName = 'fs';
 
 % Weights
-Wroad = ss(0.07);
-Wact = 0.8*tf([1 50],[1 500]); % high pass filter
+Wroad = ss(0.07);  Wroad.u = 'd';   Wroad.y = 'r';
+Wact = 0.8*tf([1 50],[1 500]);  Wact.u = 'u';  Wact.y = 'e1'; % high pass filter
 
 HandlingTarget = 0.04 * tf([1/8 1],[1/80 1]);
 ComfortTarget = 0.4 * tf([1/0.45 1],[1/150 1]);
@@ -67,7 +70,7 @@ end
 
 % Closed-loop models
 K.u = {'sd','ab'};  K.y = 'u';
-CL = connect(qcar,ActNom,K,'f_x',{'x_vel'});
+CL = connect(qcar,ActNom,K,'r',{'xb';'sd';'ab'});
 
 % Road disturbance
 t = 0:0.0025:1;
