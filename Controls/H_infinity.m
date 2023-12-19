@@ -58,15 +58,15 @@ HandlingTarget = 0.04 * tf([1/8 1],[1/80 1]);
 
 x_acc_meas = sumblk('y1 = x_acc');
 
-ICinputs = {'d1';'u'};
-ICoutputs = {'e1'; 'e2';' y1'};
-sysic = connect(sys_ss(2,:) ,ActNom,Wpos,Wact,Wx_acc,'x_acc',ICinputs,ICoutputs);
+ICinputs = {'d1','u'}; %not of correct dimension
+ICoutputs = {'e1'; 'e2';' y1'}; %not of correct dimension
+sysic = connect(sys_ss(2,:),ActNom,Wpos,Wact,Wx_acc,x_acc_meas,ICinputs,ICoutputs);
 
 % Closed-loop models
 %K.u = {'x_acc'};  K.y = 'u';
 %CL = connect(sys_ss,ActNom,K,'f_x',{'x_acc'});
 
-% Offset x position
+% Offset x positio
 %t = 0:0.0025:1;
 %roaddist = zeros(size(t));
 %roaddist(1:101) = 0.025*(1-cos(8*pi*t(1:101)));
