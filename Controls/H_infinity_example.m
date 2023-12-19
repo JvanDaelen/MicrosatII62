@@ -43,7 +43,6 @@ sdmeas  = sumblk('y1 = sd');
 abmeas = sumblk('y2 = ab');
 ICinputs = {'d';'u'};
 ICoutputs = {'e1';'e2';'e3';'y1';'y2'};
-qcar(1:3,:)
 qcaric = connect(qcar(2:3,:),ActNom,Wroad,Wact,Wab,Wsd,...
                  sdmeas,abmeas,ICinputs,ICoutputs);
 
