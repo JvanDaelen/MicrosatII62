@@ -1,85 +1,86 @@
-% H infinity controller
+% H infinity controller try
 
-% Physical parameters
-m = 5 ;%kg, change later to integration
+% System charasteristics
+m = 1000; % kg
+
+% Initial Conditions
+x0 = [3;  % position x [m]
+      2;  % position y [m]
+      1;  % velocity x [m/s]
+      0]; % velocity y [m/s]
 
 % State matrices
-    A = [0    0   0   1  0  0; 
-         0    0   0   0  1  0;
-         0    0   0   0  0  1;
-         0    0   0   0  0  0;
-         0    0   0   0  0  0;
-         0    0   0   0  0  0]; % pass through the velocity term and discard the position term
-    B = [0    0   0; 
-         0    0   0;
-         0    0   0;
-         1/m  0   0;
-         0    1/m 0;
-         0    0   1/m];
-    C = eye(6);
-    D = [0 0 0;
-         0 0 0;
-         0 0 0;
-         0 0 0;
-         0 0 0;
-         0 0 0];
+    A = [0    0   1   0; 
+     0    0   0   1;
+     0    0   0   0;
+     0    0   0   0]; % pass through the velocity term and discard the position term
+B = [0    0; 
+     0    0;
+     1/m  0;
+     0    1/m];
+C = [1 0 0 0
+     0 1 0 0
+     0 0 1 0
+     0 0 0 1];
+D = [0 0;
+     0 0;
+     0 0;
+     0 0];
 
-qcar = ss(A,B,C,D);
-qcar.StateName = {'x_pos';'y_pos';'z_pos';...
-          'x_vel';'y_vel';'z_vel'};
-qcar.InputName = {'f_x';'f_y';'f_z'};
-qcar.OutputName = {'x_vel';'y_vel';'z_vel';...
-          'x_acc';'y_acc';'z_acc'};
+sys_ss = ss(A,B,C,D);
+size(sys_ss); % 4 outputs, 2 inputs, 4 states
+sys_ss.StateName = {'x_pos';'y_pos';...
+          'x_vel';'y_vel'};
+sys_ss.InputName = {'f_x';'f_y'};
+sys_ss.OutputName = {'x_vel';'x_acc';'y_vel'; 'y_acc'};
 
-% Nominal Actuator Model
-ActNom = tf(1, 1);
+ncont = 1; % one control signal, f_x
+nmeas = 1; % one measurement signal, x_pos
+
+[K1,CL,gamma] = hinfsyn(sys_ss,nmeas,ncont);
+
+size(K1); % 4 outputs, 2 inputs, 4 states
+
+ActNom = tf(1, [1/60 1]);
 ActNom.InputName = 'u';
-ActNom.OutputName = 'fs';
+ActNom.OutputName = 'f_x';
 
-% Weights
-Wroad = ss(0.07);
-Wact = 0.8*tf([1 50],[1 500]); % high pass filter
+% Control objective: low accelerations
+% Measurement of acceleration
+% Disturbance: different position x_pos
+% No sensor noise for now
+
+W_pos = ss(0.07);
+W_pos.u = 'd1'; W_pos.y= 'x_pos';
+W_act = ss(0.07);
+W_act.u = 'u'; W_act.y = 'e1';
+W_x_acc = ss(0.07);
+W_x_acc.u = 'x_acc'; W_x_acc.y = 'e2';
 
 HandlingTarget = 0.04 * tf([1/8 1],[1/80 1]);
-ComfortTarget = 0.4 * tf([1/0.45 1],[1/150 1]);
 
-% Three design points
-beta = reshape([0.01 0.5 0.99],[1 1 3]);
-Wsd = beta / HandlingTarget;
-Wsd.u = 'sd';  Wsd.y = 'e3';
-Wab = (1-beta) / ComfortTarget;
-Wab.u = 'ab';  Wab.y = 'e2';
+abmeas = sumblk('y1 = x_acc');
 
-sdmeas  = sumblk('y1 = sd');
-abmeas = sumblk('y2 = ab');
-ICinputs = {'d';'u'};
-ICoutputs = {'e1';'e2';'e3';'y1';'y2'};
-qcaric = connect(qcar(2:3,:),ActNom,Wroad,Wact,Wab,Wsd,...
-                 sdmeas,abmeas,ICinputs,ICoutputs)
+ICinputs = {'d1';'u'};
+ICoutputs = {'e1'; 'e2'};
+sysic = connect(sys_ss,ActNom,W_pos,W_act,W_x_acc,ICinputs,ICoutputs);
 
-ncont = 1; % one control signal, u
-nmeas = 2; % two measurement signals, sd and ab
-K = ss(zeros(ncont,nmeas,3));
-gamma = zeros(3,1);
-for i=1:3
-   [K(:,:,i),~,gamma(i)] = hinfsyn(qcaric(:,:,i),nmeas,ncont);
-end
 
 % Closed-loop models
-K.u = {'sd','ab'};  K.y = 'u';
-CL = connect(qcar,ActNom,K,'f_x',{'x_vel'});
+K.u = {'x_acc'};  K.y = 'u';
+CL = connect(sys_ss,ActNom,K,'f_x',{'x_acc'});
 
-% Road disturbance
+% Offset x position
 t = 0:0.0025:1;
 roaddist = zeros(size(t));
 roaddist(1:101) = 0.025*(1-cos(8*pi*t(1:101)));
 
 % Simulate
-p1 = lsim(qcar(:,1),roaddist,t); % open loop
-y1 = lsim(CL(1:3,1,1),roaddist,t); % comfort
-y2 = lsim(CL(1:3,1,2),roaddist,t); % balanced
-y3 = lsim(CL(1:3,1,3),roaddist,t); % handling
+p1 = lsim(sys_ss,roaddist,t); % open loop
+y1 = lsim(CL(1,:),roaddist,t); % comfort
 
-% Plot results
-plot(t,p1(:,1),'b',t,y1(:,1),'r.',t,y2(:,1),'m.',t,y3(:,1),'k.',t,roaddist,'g')
-title('Body travel'), ylabel('x_b (m)')
+
+
+
+
+

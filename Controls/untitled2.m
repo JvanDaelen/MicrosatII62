@@ -1,32 +1,20 @@
-% H infinity controller
+% H inf try 2.0
+
+% H_infinity example
 
 % Physical parameters
-m = 5 %kg, change later to integration
+mb = 300;    % kg
+mw = 1;     % kg
+bs = 1;   % N/m/s
+ks = 1 ; % N/m
+kt = 1; % N/m
 
 % State matrices
-    A = [0    0   0   1  0  0; 
-         0    0   0   0  1  0;
-         0    0   0   0  0  1;
-         0    0   0   0  0  0;
-         0    0   0   0  0  0;
-         0    0   0   0  0  0]; % pass through the velocity term and discard the position term
-    B = [0    0   0; 
-         0    0   0;
-         0    0   0;
-         1/m  0   0;
-         0    1/m 0;
-         0    0   1/m];
-    C = eye(6);
-        % [1 0 0 0
-        %  0 1 0 0
-        %  0 0 1 0
-        %  0 0 0 1];
-    D = [0 0 0;
-         0 0 0;
-         0 0 0;
-         0 0 0;
-         0 0 0;
-         0 0 0];
+A = [ 0 1 0 0; [-ks -bs ks bs]/mb ; ...
+      0 0 0 1; [ks bs -ks-kt -bs]/mw];
+B = [ 0 0; 0 1e3/mb ; 0 0 ; [kt -1e3]/mw];
+C = [1 0 0 0; 1 0 -1 0; A(2,:)];
+D = [0 0; 0 0; B(2,:)];
 
 qcar = ss(A,B,C,D);
 qcar.StateName = {'body travel (m)';'body vel (m/s)';...
@@ -49,7 +37,7 @@ ComfortTarget = 0.4 * tf([1/0.45 1],[1/150 1]);
 % Three design points
 beta = reshape([0.01 0.5 0.99],[1 1 3]);
 Wsd = beta / HandlingTarget;
-Wsd.u = 'sd';  Wsd.y = 'e3';
+Wsd.u = 'sd'; Wsd.y = 'e3';
 Wab = (1-beta) / ComfortTarget;
 Wab.u = 'ab';  Wab.y = 'e2';
 
@@ -57,8 +45,9 @@ sdmeas  = sumblk('y1 = sd');
 abmeas = sumblk('y2 = ab');
 ICinputs = {'d';'u'};
 ICoutputs = {'e1';'e2';'e3';'y1';'y2'};
+qcar(1:3,:)
 qcaric = connect(qcar(2:3,:),ActNom,Wroad,Wact,Wab,Wsd,...
-                 sdmeas,abmeas,ICinputs,ICoutputs)
+                 sdmeas,abmeas,ICinputs,ICoutputs);
 
 ncont = 1; % one control signal, u
 nmeas = 2; % two measurement signals, sd and ab
