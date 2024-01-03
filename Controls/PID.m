@@ -6,7 +6,7 @@ close all
 orbital_period = 90*60; %s
 mass = 1; %kg
 
-n_chunks = 50;
+n_chunks = 5;
 chunk_resolution = 10; % nr of steps per chunk
 full_simulation_timestep = .3; %s for full guidance loop
 simulation_final_time =  full_simulation_timestep*n_chunks; %s
