@@ -57,23 +57,25 @@ Wx_acc = ss(0.07); Wx_acc.u = 'x_acc'; Wx_acc.y = 'e2';
 HandlingTarget = 0.04 * tf([1/8 1],[1/80 1]);
 
 x_acc_meas = sumblk('y1 = x_acc');
+x_pos_meas = sumblk('y2 = x_pos');
 
-ICinputs = {'d1';'u'};
-ICoutputs = {'e1'; 'e2';' y1'};
-sysic = connect(sys_ss(2,:),ActNom,Wpos,Wact,Wx_acc,x_acc_meas,ICinputs,ICoutputs);
+ICinputs = {'d1','u'}; %not of correct dimension
+ICoutputs = {'x_pos','e1'; 'e2';' y1';'y2'};
+sysic = connect(sys_ss(2,:),ActNom,Wpos,Wact,Wx_acc,x_acc_meas...
+        , x_pos_meas,ICinputs,ICoutputs);
 
 % Closed-loop models
 %K.u = {'x_acc'};  K.y = 'u';
 %CL = connect(sys_ss,ActNom,K,'f_x',{'x_acc'});
 
 % Offset x position
-%t = 0:0.0025:1;
-%roaddist = zeros(size(t));
-%roaddist(1:101) = 0.025*(1-cos(8*pi*t(1:101)));
+%t = 0:0.005:1;
+%pos_rel = zeros(size(t));
+%pos_rel(1:50) = 0.05*(1-cos(8*pi*t(1:50)));
 
 % Simulate
-%p1 = lsim(sys_ss,roaddist,t); % open loop
-%y1 = lsim(CL(1,:),roaddist,t); % comfort
+%p1 = lsim(sys_ss,pos_rel,t); % open loop
+%y1 = lsim(CL(1,:),pos_rel,t);
 
 
 
