@@ -1,0 +1,16 @@
+
+
+relative_state_chaser = [3; 0; 0; 0; 0; 0];
+desired_relative_state = [1; 0; 0; 0; 0; 0];
+
+time_step = 0.3;
+
+mass = 1;
+n = 1e-5;
+
+[F, T] = LQR_3D(relative_state_chaser, desired_relative_state, time_step, mass, n);
+
+disp(F)
+old_vel = relative_state_chaser(1,1:3)
+
+relative_state_chaser(1,1:3) = relative_state_chaser(1,1:3) + relative_state_chaser();
