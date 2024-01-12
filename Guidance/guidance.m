@@ -26,8 +26,6 @@ function [state,acceleration] = guidance(mu,R,h,pos_ref,pos_0,pos_t)
 %                 closing phase. [m/s2]
 %                 [ax; ay; az]
 
-% bla bla
-
 a = R+h;          % Semi-major axis of the target's orbit [m]
 n = sqrt(mu/a^3); % Mean motion of the target's orbit [rad/s]
 
