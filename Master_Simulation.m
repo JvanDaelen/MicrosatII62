@@ -28,6 +28,7 @@ simulation_time_step_large = 0.3; %s
 simulation_time_step_small = 0.3; %s
 
 RotatingEarth = False;
+controller = "LQR";
 
 %% Initial conditions states
 [r_ijk, v_ijk] = keplerian2ijk(a, ecc, incl, RAAN, argp, nu); % ECI/IJK reference frame 
