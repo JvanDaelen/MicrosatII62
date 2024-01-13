@@ -10,36 +10,28 @@ n = sqrt(mu/a^3);
 mass = 1; %kg
 AOCS_loop_timestep = .3; % seconds per full AOCS loop
 desired_relative_state = [0 0 0 0 0 0];
-relative_state_initial = [.2 0 0 .1 0 0];
+relative_state_initial = [5 0 0 0 0 0];
 
 % Simulink settings
-number_of_runs = 10;
+number_of_runs = 1;
 
 
-% [F, T] = MSAT_PID_SS(relative_state_initial, desired_relative_state, n, mass, AOCS_loop_timestep, number_of_runs);
+[F, T] = MSAT_PID_SS(relative_state_initial, desired_relative_state, n, mass, AOCS_loop_timestep, number_of_runs);
 
-% function [F, T] = MSAT_PID_SS(relative_state_initial, desired_relative_state, n, mass, AOCS_loop_timestep, number_of_runs)
+function [F, T] = MSAT_PID_SS(relative_state_initial, desired_relative_state, n, mass, AOCS_loop_timestep, number_of_runs)
     %% Initialization of PID variables and constants
-    desired_relative_state = desired_relative_state;
     relative_state = relative_state_initial;
     steps_per_run = 10; % nr of steps per chunk
     
     % PID parameters
-    Pterm = 10;
-    Iterm = 5;
-    Dterm = 1;
-    Nterm = 20;
-    
-    % Send variable to workspace for Simulink
-    assignin('base',"Pterm", Pterm)
-    assignin('base',"Iterm", Iterm)
-    assignin('base',"Nterm", Nterm)
+    Pterm = .08; % .8
+    Iterm = .0; % .08
+    Dterm = 1; % 2
+    Nterm = 4;
     
     % PID initial values
     integral_term = [0 0 0];
-    differential_term = [Dterm * Nterm / (1 + Nterm*relative_state(4)) ...
-        Dterm * Nterm / (1 + Nterm*relative_state(5)) ...
-        Dterm * Nterm / (1 + Nterm*relative_state(6))];
+    differential_term = differential_term_vector(relative_state, desired_relative_state, Nterm, Dterm);
     
     % SS parameters
     A = [0     0   0    1    0   0; 
@@ -55,10 +47,6 @@ number_of_runs = 10;
         0    1/mass 0;
         0    0   1/mass];
     C = eye(6);
-    % [1 0 0 0
-    %  0 1 0 0
-    %  0 0 1 0
-    %  0 0 0 1];
     D = [0 0 0;
         0 0 0;
         0 0 0;
@@ -70,15 +58,16 @@ number_of_runs = 10;
     state_memory = relative_state_initial;
     control_force_memory = [0 0 0];
     
+    disp(differential_term)
     %% Run reference run
-    % run_time = AOCS_loop_timestep*number_of_runs;
-    % step_size = AOCS_loop_timestep/steps_per_run; %s
-    % simOut = sim("SS_PID_Simulink.slx");
-    % yout = simOut.yout;
-    % 
-    % % Extract Final result of reference run
-    % state_timeseries_reference = yout.getElement('state').Values;
-    % control_force_reference = yout.getElement('Control Forces').Values;
+    run_time = AOCS_loop_timestep*number_of_runs;
+    step_size = AOCS_loop_timestep/steps_per_run; %s
+    simOut = sim("SS_PID_Simulink.slx", 'SrcWorkspace', 'current');
+    yout = simOut.yout;
+
+    % Extract Final result of reference run
+    state_timeseries_reference = yout.getElement('state').Values;
+    control_force_reference = yout.getElement('Control Forces').Values;
     
     %% Run simulink
     % Derived simulink settings
@@ -89,7 +78,8 @@ number_of_runs = 10;
     for i = 1:1:number_of_runs
         disp("currently running run:")
         disp(i)
-        simOut = sim("SS_PID_Simulink.slx");
+        differential_term = differential_term_vector(relative_state, desired_relative_state, Nterm, Dterm);
+        simOut = sim("SS_PID_Simulink.slx", 'SrcWorkspace', 'current');
         yout = simOut.yout;
         
         % Extract Final result
@@ -99,13 +89,12 @@ number_of_runs = 10;
         
         % Convert to outputs for the dynamics simulator
         control_force = trapz(control_force_timeseries.Time, control_force_timeseries.data) / run_time;
+        disp(control_force)
         
         % Update relative state and PID initials for next run
         relative_state = state_timeseries.data(end,:);
-        integral_term = integral_term + final_integral_terms;
-        differential_term = [Dterm * Nterm / (1 + Nterm*relative_state(4)) ...
-            Dterm * Nterm / (1 + Nterm*relative_state(5)) ...
-            Dterm * Nterm / (1 + Nterm*relative_state(6))];
+        integral_term = integral_term + final_integral_terms * Iterm;  % 
+        
         % Save data in memory
         state_memory = vertcat(state_memory, state_timeseries.data(2:end,:));
         control_force_memory = vertcat(control_force_memory, control_force_timeseries.data(1:end-1,:));
@@ -120,11 +109,11 @@ number_of_runs = 10;
     %% Generate outputs
     F = [0 0 0];
     T = [0 0 0];
-% end
+end
 
 function PlotControlForce(control_force_reference, t_reconstruct, control_force_memory)
 figure('Name', "Control")
-plot(control_force_reference)
+plot(control_force_reference.Time, vertcat([0 0 0], control_force_reference.Data(1:end-1,:)))
 grid
 hold on
 plot(t_reconstruct, control_force_memory, '--')
@@ -175,3 +164,28 @@ legend({ ...
     'z runs' ...
     },'Location','northeast')
 end
+
+function differential_term = differential_term_vector(relative_state, desired_state, Nterm, Dterm)
+error = desired_state - relative_state;
+disp(error(1))
+disp(relative_state(4))
+differential_term = [
+    differential_term_element(error(1), relative_state(4), Nterm, Dterm)
+    differential_term_element(error(2), relative_state(5), Nterm, Dterm)
+    differential_term_element(error(3), relative_state(6), Nterm, Dterm)
+    ];
+end
+
+function D0 = differential_term_element(pos_error, vel, N, D)
+    D0 = (pos_error + vel/N)*D;
+end
+
+
+
+
+
+
+
+
+
+

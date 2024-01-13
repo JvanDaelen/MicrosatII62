@@ -48,7 +48,7 @@ station_keeping_points = [
     ]; % [x, y, z] in m in CR RF
 
 %% Global Variables
-control_memory_variable = cell(1); % Variable to store controller initialization
+control_memory_variable = cell(0); % Variable to store controller initialization
 control_force_history = control_force;
 relative_state_chaser_history = relative_state_chaser;
 

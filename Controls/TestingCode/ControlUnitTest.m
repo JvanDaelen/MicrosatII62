@@ -6,10 +6,25 @@ desired_relative_state = [1; 0; 0; 0; 0; 0];
 time_step = 0.3;
 
 mass = 1;
-n = 1e-5;
+mean_motion = 1e-5;
 
-for i = 1:1000
-    [F, T] = LQR_3D(relative_state_chaser, desired_relative_state, time_step, mass, n);
+controller = "PID";
+
+control_memory_variable = cell(0);
+close_system("SS_PID_Simulink.slx", 0)
+
+for i = 1:100
+    [control_force, control_memory_variable] = Control( ...
+    control_memory_variable, ...
+    relative_state_chaser, ...
+    desired_relative_state, ...
+    controller, ...
+    time_step, ...
+    mass, ...
+    mean_motion ...
+    );
+
+    F = control_force;
 
     old_vel = relative_state_chaser(4:6);
     new_vel = relative_state_chaser(4:6) + F/mass * time_step;

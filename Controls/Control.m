@@ -12,6 +12,13 @@ function [control_force, control_memory_variable] = Control( ...
     if strcmp('LQR', controller)
         [control_force, ~] = LQR_3D(relative_state_chaser, desired_relative_state, time_step, mass, mean_motion);
     elseif strcmp('PID', controller)
-        control_force = [0; 0; 0];
+        if isempty(control_memory_variable)
+            % Initialize the integral initial values for PID
+            control_memory_variable(1) = {[0 0 0]};
+        end
+        [control_force, ~] = SSPID(relative_state_chaser, desired_relative_state, mean_motion, mass, time_step, control_memory_variable);
     end
+
+    % Convert control_force from row to column vector
+    control_force = control_force';
 end
