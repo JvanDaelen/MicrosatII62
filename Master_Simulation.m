@@ -43,8 +43,12 @@ earth_rotation = 0; %rad
 %% Mission profile
 mode = "Homing";
 station_keeping_points = [
-    0 0 0;
-    1 1 1
+    -100 -1000 0;
+    0 -500 0;
+    0 -300 0;
+    0 -150 0;
+    0 -50 0;
+    0 -15 0
     ]; % [x, y, z] in m in CR RF
 
 %% Global Variables

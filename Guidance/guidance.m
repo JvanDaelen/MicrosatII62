@@ -1,4 +1,4 @@
-function [state,acceleration] = guidance(mu,R,h,pos_ref,pos_0,pos_t)
+function [desired_relative_state,desired_acceleration,mode] = guidance(relative_state_chaser,station_keeping_points,n)
 
 % The guidance function uses the CW equations to first compute the nominal 
 % trajectory of the chaser from start and until the next SK point in which 
@@ -7,37 +7,41 @@ function [state,acceleration] = guidance(mu,R,h,pos_ref,pos_0,pos_t)
 % acceleration required to reach the next SK point.
 %
 % Inputs:
-%   mu: Earth gravitational constant [m3/s2]
-%   R: Earth mean radius [m]
-%   h: Target S/C orbital altitude [m]
-%   pos_ref: relative position of SK0 w.r.t. the target [m]
-%   pos_0: current relative position of the chaser w.r.t. the target [m]
-%   pos_t: relative position of targeted SK points w.r.t. the target [m]
-%          [x1,y1,z1;
-%           x2,y2,z2;
-%           ...]
+%   relative_state_chaser: relative position and velocity of the chaser 
+%                          w.r.t. the target 
+%                          [x;y;z;u;v;w] [m;m;m;m/s;m/s;m/s]
+%   station_keeping_points: relative position of targeted SK points w.r.t. 
+%                           the target [m]
+%                           [x1,y1,z1;
+%                           x2,y2,z2;
+%                           ...]
+%   n: mean motion of the target's orbit [rad/s]
 %
 % Outputs:
-%   state: relative position and desired relative velocity of the chaser 
-%          w.r.t. the target required to reach the next SK point [m] [m/s]
-%          [x; y; z; dx; dy; dz]
-%   acceleration: relative constant acceleration of the chaser w.r.t. the
-%                 target. Required during altitude raise and zero during 
-%                 closing phase. [m/s2]
-%                 [ax; ay; az]
+%   desired_relative_state: relative position and desired relative velocity of the chaser 
+%                           w.r.t. the target required to reach the next SK point [m] [m/s]
+%                           [x; y; z; u; v; w]
+%   desired_acceleration: relative constant acceleration of the chaser w.r.t. the
+%                         target. Required during altitude raise and zero during 
+%                         closing phase. [m/s2]
+%                         [ax; ay; az]
+%   mode: approximation mode, string variable
+%         Values are 'Homing','Closing' or 'Final'
 
-a = R+h;          % Semi-major axis of the target's orbit [m]
-n = sqrt(mu/a^3); % Mean motion of the target's orbit [rad/s]
 
 % Initial position of the S/C
-x0 = pos_0(1);
-y0 = pos_0(2);
-z0 = pos_0(3);
+x0 = relative_state_chaser(1);
+y0 = relative_state_chaser(2);
+z0 = relative_state_chaser(3);
+pos_0 = [x0,y0,z0];
 
 %% COMPUTATION OF THE NOMINAL TRAJECTORY (up to the next SK point)
 
-vel_ref = [0,0,0]; % Initial relative velocity [m/s]
+vel_ref = [0,0,0]; % Initial relative reference velocity [m/s]
 c = 1; % Counter
+
+pos_ref = station_keeping_points(1,:); % Initial position, SK0 [m]
+pos_t = station_keeping_points(2:end,:); % Target SK positions [m]
 
 % Check between which SK points the chaser S/C is and compute the nominal 
 % trajectory up to the next SK point. Update each time the position and
@@ -96,13 +100,17 @@ end
 
 if (y0 >= pos_ref(1,2)) && (y0 < pos_t(1,2)) % Homing phase
     [x,y,z,dx,dy,dz] = homingTrajectory(n,pos_0,dx_ref,dy_ref,pos_t,c,fy);
+    mode = 'Homing';
 elseif (y0 >= pos_t(1,2)) && (y0 < pos_t(5,2)) % Closing phase
     [x,y,z,dx,dy,dz] = closingTrajectory(n,pos_0,dx_ref,dy_ref,pos_t,c);
     fy = 0;
+    mode = 'Closing';
+else
+    mode = 'Final';
 end
 
 % Output variables
-state = [x(1),y(1),z(1),dx(1),dy(1),dz(1)];
-acceleration = [0;fy;0];
+desired_relative_state = [x(1),y(1),z(1),dx(1),dy(1),dz(1)];
+desired_acceleration = [0;fy;0];
 
 end
