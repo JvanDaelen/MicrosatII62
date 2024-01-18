@@ -106,7 +106,7 @@ while running
         );
     
     % Convert control force from CW reference frame to ECI
-    control_force_ECI = CW2ECI(control_force);
+    control_force_ECI = CW2ECI(absolute_state_target, control_force);
 
     % Dynamics
     [absolute_state_chaser, absolute_state_target, earth_rotation] = ...
