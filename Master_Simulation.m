@@ -31,10 +31,14 @@ RotatingEarth = False;
 controller = "LQR";
 
 %% Initial conditions states
-[r_ijk, v_ijk] = keplerian2ijk(a, ecc, incl, RAAN, argp, nu); % ECI/IJK reference frame 
+if ecc == 0 && incl == 0
+    [r_ijk, v_ijk] = keplerian2ijk(a, ecc, incl, RAAN, argp, nu, 'truelon', nu); % ECI/IJK reference frame 
+else
+    [r_ijk, v_ijk] = keplerian2ijk(a, ecc, incl, RAAN, argp, nu); % ECI/IJK reference frame 
+end
 absolute_state_target = vertcat(r_ijk, v_ijk); % [x, y, z, u, v, w] [m, m, m, m/s, m/s, m/s]
 
-absolute_state_chaser = absolute_state_target + CW2ECI6DOF(relative_state_chaser); % ECI reference frame [x, y, z, u, v, w] [m, m, m, m/s, m/s, m/s]
+absolute_state_chaser = absolute_state_target + CW2ECI(absolute_state_target, relative_state_chaser); % ECI reference frame [x, y, z, u, v, w] [m, m, m, m/s, m/s, m/s]
 
 control_force = [0; 0; 0]; % [Fx, Fy, Fz] in N
 
@@ -96,7 +100,7 @@ while running
         );
     
     % Convert control force from CW reference frame to ECI
-    control_force_ECI = CW2ECI3DOF(control_force);
+    control_force_ECI = CW2ECI(control_force);
 
     % Dynamics
     absolute_state_chaser = propagateSpacecraft_FE_Kepler( ...
