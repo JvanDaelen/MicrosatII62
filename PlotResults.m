@@ -18,7 +18,7 @@ Z = relative_state_chaser_history(3,:);
 h = stem3(X, Y, Z);
 h.Color = [.7 .7 .7];
 h.Marker = 'none';
-h.LineStyle = "--";
+h.LineStyle = "-";
 hold on
 grid on
 l = plot3(X, Y, Z);
@@ -26,7 +26,9 @@ l.Color = 'b';
 xlabel("X pos [m]")
 ylabel("Y pos [m]")
 zlabel("Z pos [m]")
+scatter3([0],[0],[0],'filled', 'r')
 saveas(gcf, folder_name + figure_name + ".png")
+
 
 %% Plot positions
 figure_name = "Positions";

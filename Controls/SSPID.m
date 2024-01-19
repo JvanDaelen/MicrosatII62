@@ -4,8 +4,13 @@ function [F, T, control_memory_variable] = SSPID(relative_state_initial, desired
 % Initialization of PID variables and constants
 relative_state = relative_state_initial;
 steps_per_run = 10; % nr of steps per chunk
-Pterm = .08; % .8
-Iterm = .0; % .08
+% Pterm = .08; % .8
+% Iterm = .0; % .08
+% Dterm = 1; % 2
+% Nterm = 4;
+
+Pterm = .8; % .8
+Iterm = .08; % .08
 Dterm = 1; % 2
 Nterm = 4;
 

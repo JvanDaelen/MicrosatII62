@@ -18,7 +18,7 @@ function [control_force, control_memory_variable] = Control( ...
         end
         [control_force, ~] = SSPID(relative_state_chaser, desired_relative_state, mean_motion, mass, time_step, control_memory_variable);
     end
-
+    control_force(1,1) = -control_force(1,1);
     % Convert control_force from row to column vector
     control_force = control_force';
 end
