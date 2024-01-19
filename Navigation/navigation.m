@@ -1,7 +1,8 @@
 function [relative_state_chaser, absolute_state_chaser] = navigation(relative_state_chaser, absolute_state_chaser, absolute_state_target, control_force)
     % System dynamics matrices
-    A = eye(6) + randn(6) * 0.1;  % State transition matrix (with some randomness)
-    B = [zeros(3); eye(3)];      % Control input matrix (assuming control_force is [F_x, F_y, F_z])
+    % A = eye(6); %+ randn(6) * 0.1;  % State transition matrix (with some randomness)
+    A = [1 1 1 1 1 1; 0 0 0 0 0 0; 0 0 0 0 0 0; 0 0 0 0 0 0; 0 0 0 0 0 0; 0 0 0 0 0 0];
+    B = [zeros(3); zeros(3)];      % Control input matrix (assuming control_force is [F_x, F_y, F_z])
     H = eye(6);                   % Measurement matrix
 
     % Process and measurement noise covariances

@@ -43,6 +43,6 @@ function [F, T] = LQR_3D(relative_state_chaser, desired_relative_state, time_ste
     
     % Total impulse
     acceleration_array = diff(y(:,4:6));
-    F = transpose(mass*acceleration_array);
+    F = mass*acceleration_array;
     T = [0 0 0];
 end
