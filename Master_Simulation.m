@@ -1,5 +1,8 @@
 % Master Simulation for Microsat
+close all
+
 %% Settings for dynamics simulation
+run_ID = 'DebuggingPID';
 integrator = 'FE'; % 'FE' for forward Euler or 'RK4' for 4th order fixed
                    % time_step Runge-Kutta
 acceleration_model = 'kepler'; % 'kepler' for kepler orbit model or 'SH'
@@ -22,7 +25,7 @@ nu = 0; % deg True Anomoly
 
 relative_state_chaser = [ % in CW reference frame centered at target
     0; % x in m, zenith direction
-    -1e+3; % y in m, allong track, direction of motion positive
+    -1; % y in m, allong track, direction of motion positive
     0; % z in m, completes right hand coordinate system
     0; % u, m/s
     0; % v, m/s
@@ -33,8 +36,8 @@ relative_state_chaser = [ % in CW reference frame centered at target
 simulation_time_step_large = 0.3; %s
 simulation_time_step_small = 0.3; %s
 
-RotatingEarth = False;
-controller = "LQR";
+RotatingEarth = false;
+controller = "PID";
 
 %% Initial conditions states
 if ecc == 0 && incl == 0
@@ -45,7 +48,7 @@ end
 absolute_state_target = vertcat(r_ijk, v_ijk); % [x, y, z, u, v, w] [m, m, m, m/s, m/s, m/s]
 
 absolute_state_chaser = absolute_state_target + CW2ECI(absolute_state_target, relative_state_chaser); % ECI reference frame [x, y, z, u, v, w] [m, m, m, m/s, m/s, m/s]
-
+disp(absolute_state_chaser);
 control_force = [0; 0; 0]; % [Fx, Fy, Fz] in N
 
 earth_rotation = 0; %rad
@@ -64,10 +67,13 @@ station_keeping_points = [
 %% Global Variables
 control_memory_variable = cell(0); % Variable to store controller initialization
 control_force_history = control_force;
+time_history = [0];
 relative_state_chaser_history = relative_state_chaser;
 
-running = True;
+running = true;
+t = 0;
 while running
+    disp(t)
     % Current Timestep Size
     if mode == "Homing"
         time_step = simulation_time_step_large;
@@ -76,24 +82,39 @@ while running
     elseif mode == "Final"
         time_step = simulation_time_step_small;
     end
+
+    if t > 5
+        running = false;
+    end
     % Global variables
     mean_motion = sqrt(mu/vecnorm(absolute_state_chaser(1:3))^3);
     
     % Navigation
-    [relative_state_chaser, absolute_state_chaser] = Navigation( ...
+    % [relative_state_chaser, absolute_state_chaser] = navigation( ...
+    %     relative_state_chaser, ...
+    %     absolute_state_chaser, ...
+    %     absolute_state_target, ...
+    %     control_force ...
+    %     );
+    [relative_state_chaser, absolute_state_chaser] = navigation2( ...
         relative_state_chaser, ...
         absolute_state_chaser, ...
         absolute_state_target, ...
-        control_force ...
+        control_force, ...
+        mass, ...
+        time_step ...
         );
 
     % Guidance
-    [desired_relative_state, desired_acceleration, mode] = Guidance( ...
-        relative_state_chaser, ...
-        station_keeping_points, ...
-        mean_motion ...
-        );
-
+    % [desired_relative_state, desired_acceleration, mode] = guidance( ...
+    %     relative_state_chaser, ...
+    %     station_keeping_points, ...
+    %     mean_motion ...
+    %     );
+    desired_relative_state = [0;0;0;0;0;0];
+    desired_acceleration = [0;0;0];
+    mode = "Homing";
+    
     % Control
     [control_force, control_memory_variable] = Control( ...
         control_memory_variable, ...
@@ -104,6 +125,7 @@ while running
         mass, ...
         mean_motion ...
         );
+    
     
     % Convert control force from CW reference frame to ECI
     control_force_ECI = CW2ECI(absolute_state_target, control_force);
@@ -121,30 +143,14 @@ while running
         earth_rotation);
     
     if mode == "Docked"
-        running = False;
+        running = false;
     end
     
     % Save variables for plotting
     control_force_history = horzcat(control_force_history, control_force);
     relative_state_chaser_history = horzcat(relative_state_chaser_history, relative_state_chaser);
+    time_history = horzcat(time_history, t);
+    t = t + time_step;
 end
 
-
-%% Plotting results
-% figure_name = "Trajectory"
-% figure('Name', figure_name)
-% plot(state_timeseries_reference.Time, state_timeseries_reference.Data(:, 1:3))
-% grid
-% hold on
-% plot(t_reconstruct, state_memory(:,1:3), '--')
-% xlabel("time [s]")
-% ylabel("position [m]")
-% legend({ ...
-%     'x', ...
-%     'y', ...
-%     'z', ...
-%     'x runs', ...
-%     'y runs', ...
-%     'z runs' ...
-%     },'Location','northeast')
-% saveas(gcf, figure_name)
+PlotResults(relative_state_chaser_history, control_force_history, run_ID, time_history)

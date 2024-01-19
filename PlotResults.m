@@ -1,10 +1,13 @@
-function [] = PlotResults(relative_state_chaser_history)
+function [] = PlotResults(relative_state_chaser_history, control_force_history, run_ID, time)
 %PLOTRESULTS Function to plot simulation output
 %   Plots are made for 3D-trajectory, deltaV consumption, control force,
 %   position, velocity
 
+mkdir("Plots\" + run_ID)
+folder_name = pwd + "\Plots\" + run_ID + "\";
+
 %% 3D-trajectory plot
-figure_name = 'Trajectory';
+figure_name = "Trajectory";
 figure('Name', figure_name)
 
 % Postion variable to plot
@@ -20,47 +23,57 @@ hold on
 grid on
 l = plot3(X, Y, Z);
 l.Color = 'b';
-xlabel("position [m]")
-ylabel("position [m]")
-zlabel("position [m]")
-% legend({ ...
-%     'x', ...
-%     'y', ...
-%     'z', ...
-%     'x runs', ...
-%     'y runs', ...
-%     'z runs' ...
-%     },'Location','northeast')
-disp([pwd '/Plots/' figure_name '.png'])
-saveas(gcf, [pwd '/Plots/' + figure_name + '.png'])
+xlabel("X pos [m]")
+ylabel("Y pos [m]")
+zlabel("Z pos [m]")
+saveas(gcf, folder_name + figure_name + ".png")
 
+%% Plot positions
+figure_name = "Positions";
+f1 = figure('Name', figure_name);
 
-
-
-
-
-
-
-
-
-
-
+suplotTitle = {"X", "Y", "Z"}; 
+for ii=1:3
+    subplot(3,1,ii);
+    plot(time, relative_state_chaser_history(ii,:))
+    ylabel(suplotTitle{ii} + " pos [m]")
+    grid on
+    title(suplotTitle{ii})
 end
+xlabel("time [s]")
+saveas(gcf, folder_name + figure_name + ".png")
 
-% figure_name = "Trajectory"
-% figure('Name', figure_name)
-% plot(state_timeseries_reference.Time, state_timeseries_reference.Data(:, 1:3))
-% grid
-% hold on
-% plot(t_reconstruct, state_memory(:,1:3), '--')
-% xlabel("time [s]")
-% ylabel("position [m]")
-% legend({ ...
-%     'x', ...
-%     'y', ...
-%     'z', ...
-%     'x runs', ...
-%     'y runs', ...
-%     'z runs' ...
-%     },'Location','northeast')
-% saveas(gcf, figure_name)
+
+%% Plot velocities
+figure_name = "Velocities";
+f1 = figure('Name', figure_name);
+
+suplotTitle = {'u', 'v', 'w'}; 
+for ii=1:3
+    subplot(3,1,ii);
+    plot(time, relative_state_chaser_history(ii+3,:))
+    ylabel(suplotTitle{ii} + " vel [m/s]")
+    grid on
+    title(suplotTitle{ii})
+end
+xlabel("time [s]")
+saveas(gcf, folder_name + figure_name + ".png")
+
+
+%% 3D-trajectory plot
+figure_name = "Control Forces";
+f2 = figure('Name', figure_name);
+
+% Postion variable to plot
+
+suplotTitle = {'Fx', 'Fy', 'Fz'}; 
+for ii=1:3
+    subplot(3,1,ii);
+    plot(time, control_force_history(ii, :))
+    ylabel(suplotTitle{ii} + " [N]")
+    grid on
+    title(suplotTitle{ii})
+end
+xlabel("time [s]")
+saveas(gcf, folder_name + figure_name + ".png")
+end
