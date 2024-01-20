@@ -3,7 +3,7 @@ function [F, T, control_memory_variable] = velSSPID(relative_state_initial, desi
 
 % Initialization of PID variables and constants
 relative_state = relative_state_initial;
-steps_per_run = 10; % nr of steps per chunk
+steps_per_run = 100; % nr of steps per chunk
 % Pterm = .08; % .8
 % Iterm = .0; % .08
 % Dterm = 1; % 2

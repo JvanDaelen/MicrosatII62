@@ -2,7 +2,7 @@
 close all
 
 %% Settings for dynamics simulation
-run_ID = 'DebuggingPID_Guidance_NoNAV_6000sRun';
+run_ID = 'DebuggingPID_Guidance_NoNAV';
 integrator = 'FE'; % 'FE' for forward Euler or 'RK4' for 4th order fixed
                    % time_step Runge-Kutta
 acceleration_model = 'kepler'; % 'kepler' for kepler orbit model or 'SH'
@@ -35,7 +35,7 @@ relative_state_chaser = [ % in CW reference frame centered at target
 %% Simulation constants
 simulation_time_step_large = 10; %s
 simulation_time_step_small = 0.3; %s
-time_out_time = 6000; %s
+time_out_time = 800; %s
 
 RotatingEarth = false;
 controller = "PID";
@@ -71,7 +71,6 @@ control_memory_variable = cell(0); % Variable to store controller initialization
 control_force_history = control_force;
 time_history = [0];
 relative_state_chaser_history = relative_state_chaser;
-desired_state_history = relative_state_chaser;
 
 running = true;
 t = 0;
@@ -115,7 +114,6 @@ while running
         station_keeping_points, ...
         mean_motion ...
         );
-    desired_relative_state = desired_relative_state'; % Transpose to make it a column vector
     
     % desired_relative_state = [0;0;0;0;0;0];
     % desired_acceleration = [0;0;0];
@@ -125,7 +123,7 @@ while running
     [control_force, control_memory_variable] = Control( ...
         control_memory_variable, ...
         relative_state_chaser, ...
-        desired_relative_state, ...
+        desired_relative_state', ...
         controller, ...
         time_step, ...
         mass, ...
@@ -134,16 +132,14 @@ while running
         );
     control_force(1,1) = -control_force(1,1);
     
-    disp("beginning time: " + t)
+    disp("time: " + t)
     disp("rel state: " + relative_state_chaser)
-    disp("desired rel state: " + desired_relative_state)
+    disp("desired rel state: " + desired_relative_state')
     disp("control force: " + control_force)
     
     
     % Convert control force from CW reference frame to ECI
     control_force_ECI = CW2ECI(absolute_state_target, control_force);
-    disp("control force ECI: " + control_force_ECI)
-    disp("finished time: " + t)
 
     % Dynamics
     [absolute_state_chaser, absolute_state_target, earth_rotation] = ...
@@ -162,11 +158,11 @@ while running
     end
     
     % Save variables for plotting
-    desired_state_history = horzcat(desired_state_history, desired_relative_state);
+    desired
     control_force_history = horzcat(control_force_history, control_force);
     relative_state_chaser_history = horzcat(relative_state_chaser_history, relative_state_chaser);
     time_history = horzcat(time_history, t);
     t = t + time_step;
 end
 
-PlotResults(relative_state_chaser_history, control_force_history, run_ID, time_history, desired_state_history)
+PlotResults(relative_state_chaser_history, control_force_history, run_ID, time_history)
