@@ -33,7 +33,7 @@ relative_state_chaser = [ % in CW reference frame centered at target
     ]; % in m CW reference frame centered at target [x, y, z, u, v, w]
 
 %% Simulation constants
-simulation_time_step_large = 1; %s
+simulation_time_step_large = 10; %s
 simulation_time_step_small = 0.3; %s
 
 RotatingEarth = false;
@@ -83,7 +83,7 @@ while running
         time_step = simulation_time_step_small;
     end
 
-    if t > 700
+    if t > 800
         running = false;
     end
     % Global variables
