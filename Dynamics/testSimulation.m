@@ -4,7 +4,7 @@ dt = 100; % s
 iterations = 1000;
 t = zeros(1, iterations);
 mass = 100; % kg
-force = 0.1; % N
+force = 0; % N
 
 positionHistory = zeros(3, iterations);
 positionHistory(:,1) = initialState(1:3);
@@ -24,6 +24,9 @@ for i = 2:iterations
     disp(i)
     t(i) = t(i-1) + dt;
     controlForce = force * state(4:6) / norm(state(4:6));
+    % [state, acceleration] = propagateSpacecraft_FE_Kepler(state, controlForce, mass, dt);
+    % [state, acceleration] = propagateSpacecraft_RK4_Kepler(state, controlForce, mass, dt);
+    % [state, acceleration] = propagateSpacecraft_FE_SH(state, controlForce, mass, dt, earthRotation);
     [state, acceleration] = propagateSpacecraft_RK4_SH(state, controlForce, mass, dt, earthRotation);
     positionHistory(:,i) = state(1:3);
     ECEFpositionHistory(:,i) = ECI2ECEF(state(1:3), earthRotation);
@@ -38,7 +41,12 @@ plot(t, positionHistory(1,:),'DisplayName','x')
 hold on
 plot(t, positionHistory(2,:),'DisplayName','y')
 plot(t, positionHistory(3,:),'DisplayName','z')
+ax = gca;
+ax.FontSize = 11;
+xlabel('t [s]')
+ylabel('Coordinates [m]')
 legend
+% saveas(gcf,'RK4KepCoords.jpg')
 hold off
 
 figure()
@@ -50,7 +58,12 @@ hold on
 plot(t(1:end-1), accelerationHistory(2,:),'DisplayName','a_{y}')
 plot(t(1:end-1), accelerationHistory(3,:),'DisplayName','a_{z}')
 plot(t(1:end-1),vecnorm(accelerationHistory),'DisplayName','|a|')
+ax = gca;
+ax.FontSize = 11;
+xlabel('t [s]')
+ylabel('Acceleration [m/s^{2}]')
 legend
+saveas(gcf,'RK4SHAcc.jpg')
 hold off
 
 figure()
