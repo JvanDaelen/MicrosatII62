@@ -33,11 +33,12 @@ relative_state_chaser = [ % in CW reference frame centered at target
     ]; % in m CW reference frame centered at target [x, y, z, u, v, w]
 
 %% Simulation constants
-simulation_time_step_large = 10; %s
+simulation_time_step_large = 1; %s
 simulation_time_step_small = 0.3; %s
 
 RotatingEarth = false;
-controller = "PID";
+controller = "LQR";
+control_mode = "vel";
 
 %% Initial conditions states
 if ecc == 0 && incl == 0
@@ -126,7 +127,8 @@ while running
         controller, ...
         time_step, ...
         mass, ...
-        mean_motion ...
+        mean_motion, ...
+        control_mode ...
         );
     
     
