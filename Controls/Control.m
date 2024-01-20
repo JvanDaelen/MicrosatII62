@@ -18,14 +18,16 @@ function [control_force, control_memory_variable] = Control( ...
             control_memory_variable(1) = {[0 0 0]};
         end
         if strcmp('pos', control_mode)
+            disp("pos conrtrol")
             [control_force, ~] = SSPID(relative_state_chaser, desired_relative_state, mean_motion, mass, time_step, control_memory_variable);
         elseif strcmp('vel', control_mode)
+            disp("velocity conrtrol")
             [control_force, ~] = velSSPID(relative_state_chaser, desired_relative_state, mean_motion, mass, time_step, control_memory_variable);
         else
             error("Invalid control mode provided")
         end
     end
-    control_force(1,1) = -control_force(1,1);
+    
     % Convert control_force from row to column vector
     control_force = control_force';
 end
