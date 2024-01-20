@@ -1,6 +1,7 @@
 function vectorCW = ECI2CW(absolute_state_target, vector)
     % Doesn't take curvature of the path into account, so if the vector is
     % a relative state, it will become in accurate at large distances
+    
     velocity = absolute_state_target(4:6);
     [azimuth, elevation, ~] = cart2sph(absolute_state_target(1), ...
                                        absolute_state_target(2), ...
@@ -20,7 +21,7 @@ function vectorCW = ECI2CW(absolute_state_target, vector)
         rollAngle = atan2(norm(crossYV), dotYV);
     elseif crossYV(1) < 0
         rollAngle = -atan2(norm(crossYV), dotYV);
-    elseif dotYV == 1
+    elseif dotYV == norm(intermediateVelocity)
         rollAngle = 0;
     else
         rollAngle = pi;
