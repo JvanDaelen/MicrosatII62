@@ -55,7 +55,7 @@ x_ref = x_ref0;
 y_ref = y_ref0;
 dx_ref = dx_ref0;
 dy_ref = dy_ref0;
-if y0 > pos_t(c,2)
+if y0 >= pos_t(c,2)
     c = c+1;
     % Between SK1 and SK2
     [x_ref1,y_ref1,dx_ref1,dy_ref1] = closingNominalTrajectory(n,[x_ref(end),y_ref(end),0],vel_ref,pos_t(c,:));
@@ -63,7 +63,7 @@ if y0 > pos_t(c,2)
     y_ref = [y_ref;y_ref1];
     dx_ref = [dx_ref;dx_ref1];
     dy_ref = [dy_ref;dy_ref1];
-    if y0 > pos_t(c,2)
+    if y0 >= pos_t(c,2)
         c = c+1;
         % Between SK2 and SK3
         [x_ref2,y_ref2,dx_ref2,dy_ref2] = closingNominalTrajectory(n,[x_ref(end),y_ref(end),0],[dx_ref(end),dy_ref(end),0],pos_t(c,:));
@@ -71,7 +71,7 @@ if y0 > pos_t(c,2)
         y_ref = [y_ref;y_ref2];
         dx_ref = [dx_ref;dx_ref2];
         dy_ref = [dy_ref;dy_ref2];
-        if y0 > pos_t(c,2)
+        if y0 >= pos_t(c,2)
             c = c+1;
             % Between SK3 and SK4
             [x_ref3,y_ref3,dx_ref3,dy_ref3] = closingNominalTrajectory(n,[x_ref(end),y_ref(end),0],[dx_ref(end),dy_ref(end),0],pos_t(c,:));
@@ -79,7 +79,7 @@ if y0 > pos_t(c,2)
             y_ref = [y_ref;y_ref3];
             dx_ref = [dx_ref;dx_ref3];
             dy_ref = [dy_ref;dy_ref3];
-            if y0 > pos_t(c,2)
+            if y0 >= pos_t(c,2)
                 c = c+1;
                 % Between SK4 and SK5
                 [x_ref4,y_ref4,dx_ref4,dy_ref4] = closingNominalTrajectory(n,[x_ref(end),y_ref(end),0],[dx_ref(end),dy_ref(end),0],pos_t(c,:));

@@ -48,9 +48,10 @@ eq3 = dx_t == 3*n*x0*sin(n*t_end) + dx0*cos(n*t_end) + 2*dy0*sin(n*t_end) + fx/n
 eq4 = dy_t == -dy0*(3-4*cos(n*t_end)) - 6*n*x0*(1-cos(n*t_end)) - 2*dx0*sin(n*t_end) - 2*fx/n*(1-cos(n*t_end)) + 2*fy/n*(-3/2*n*t_end+2*sin(n*t_end));
 eq5 = z_t == z0*cos(n*t_end) + dz0/n*sin(n*t_end) + fz/n*(1-cos(n*t_end));
 
-S = vpasolve([eq1,eq2,eq3,eq5],[dx0,dy0,dz0,t_end]);
+% S = vpasolve([eq1,eq2,eq3,eq5],[dx0,dy0,dz0,t_end]);
+S = vpasolve([eq1,eq2,eq4,eq5],[dx0,dy0,dz0,t_end]);
 if S.t_end < 0
-    S = vpasolve([eq1,eq2,eq4,eq5],[dx0,dy0,dz0,t_end]);
+    S = vpasolve([eq1,eq2,eq3,eq5],[dx0,dy0,dz0,t_end]);
 end
 
 dx0 = double(S.dx0);

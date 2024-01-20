@@ -1,7 +1,7 @@
 initialState = [6871000; 0; 0; 0; 7617; 0]; % m and m/s
 initialEarthRotation = 0; % rad
 dt = 100; % s
-iterations = 1000;
+iterations = 100;
 t = zeros(1, iterations);
 mass = 100; % kg
 force = 0; % N

@@ -6,28 +6,28 @@ function [newChaserState, newTargetState, newEarthRotation] ...
         [newChaserState, ~] = propagateSpacecraft_FE_Kepler(chaserState, ...
             controlForce, mass, dt);
         [newTargetState, ~] = propagateSpacecraft_FE_Kepler(targetState, ...
-            controlForce, mass, dt);
+            [0;0;0], mass, dt);
         newEarthRotation = earthRotation;
     
     elseif strcmp(integrator, 'FE') && strcmp(accelerationModel, 'SH')
         [newChaserState, ~] = propagateSpacecraft_FE_SH(chaserState, ...
             controlForce, mass, dt, earthRotation);
         [newTargetState, ~] = propagateSpacecraft_FE_SH(targetState, ...
-            controlForce, mass, dt, earthRotation);
+            [0;0;0], mass, dt, earthRotation);
         newEarthRotation = propagateEarth(earthRotation);
     
     elseif strcmp(integrator, 'RK4') && strcmp(accelerationModel, 'kepler')
         [newChaserState, ~] = propagateSpacecraft_RK4_Kepler(chaserState, ...
             controlForce, mass, dt);
         [newTargetState, ~] = propagateSpacecraft_RK4_Kepler(targetState, ...
-            controlForce, mass, dt);
+            [0;0;0], mass, dt);
         newEarthRotation = earthRotation;
     
     elseif strcmp(integrator, 'RK4') && strcmp(accelerationModel, 'SH')
         [newChaserState, ~] = propagateSpacecraft_RK4_SH(chaserState, ...
             controlForce, mass, dt, earthRotation);
         [newTargetState, ~] = propagateSpacecraft_RK4_SH(targetState, ...
-            controlForce, mass, dt, earthRotation);
+            [0;0;0], mass, dt, earthRotation);
         newEarthRotation = propagateEarth(earthRotation);
     
     else

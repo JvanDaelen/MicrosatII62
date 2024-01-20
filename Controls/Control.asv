@@ -17,12 +17,10 @@ function [control_force, control_memory_variable] = Control( ...
             % Initialize the integral initial values for PID
             control_memory_variable(1) = {[0 0 0]};
         end
-        if strcmp('pos', control_mode)
-            [control_force, ~] = SSPID(relative_state_chaser, desired_relative_state, mean_motion, mass, time_step, control_memory_variable);
-        elseif strcmp('vel', control_mode)
-            [control_force, ~] = velSSPID(relative_state_chaser, desired_relative_state, mean_motion, mass, time_step, control_memory_variable);
+        if strcmp('vel', control_mode)
+            [control_force, ~] = SSPID(relative_state_chaser, desired_relative_state, mean_motion, mass, time_step, control_memory_variable, control_mode);
+        elseif
         else
-            error("Invalid control mode provided")
         end
     end
     control_force(1,1) = -control_force(1,1);
