@@ -16,12 +16,12 @@ function vectorCW = ECI2CW(absolute_state_target, vector)
     intermediateVelocity = rotationMatrixY * rotationMatrixZ * velocity;
     crossYV = cross([0; 1; 0], intermediateVelocity);
     dotYV = dot([0;1;0], intermediateVelocity);
-
+    
     if crossYV(1) > 0
         rollAngle = atan2(norm(crossYV), dotYV);
     elseif crossYV(1) < 0
         rollAngle = -atan2(norm(crossYV), dotYV);
-    elseif dotYV == norm(intermediateVelocity)
+    elseif dotYV > 0
         rollAngle = 0;
     else
         rollAngle = pi;
