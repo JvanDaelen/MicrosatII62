@@ -36,7 +36,7 @@ function [relative_state_chaser, absolute_state_chaser] = navigation_vbn(relativ
 
     %% Kalman Filter Initialisation
 
-    dt = 1e-5;
+    dt = 1e-3;
     
     A = [0 0 0 dt 0 0;
         0 1 0 0 dt 0;
@@ -100,8 +100,8 @@ function [relative_state_chaser, absolute_state_chaser] = navigation_vbn(relativ
     
     relative_state_chaser = x_hat;
 
-    disp("Relative State")
-    disp(relative_state_chaser)
+    % disp("Relative State")
+    % disp(relative_state_chaser)
     
     absolute_state_chaser = relative_state_chaser + absolute_state_target;
     

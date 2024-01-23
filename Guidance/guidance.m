@@ -100,19 +100,21 @@ end
 
 if (y0 >= pos_ref(1,2)) && (y0 < pos_t(1,2)) % Homing phase
     [x,y,z,dx,dy,dz] = homingTrajectory(n,pos_0,dx_ref,dy_ref,pos_t,c,fy);
+    desired_relative_state = [x(1),y(1),z(1),dx(1),dy(1),dz(1)];
     mode = 'Homing';
 elseif (y0 >= pos_t(1,2)) && (y0 < pos_t(5,2)) % Closing phase
     [x,y,z,dx,dy,dz] = closingTrajectory(n,pos_0,dx_ref,dy_ref,pos_t,c);
+    desired_relative_state = [x(1),y(1),z(1),dx(1),dy(1),dz(1)];
     fy = 0;
     mode = 'Closing';
 else
     mode = 'Final';
-    [x,y,z,dx,dy,dz] = [pos_t(end,1),pos_t(end,2),pos_t(end,3),0,0,0];
+    desired_relative_state = [pos_t(end,1),pos_t(end,2),pos_t(end,3),0,0,0];
 end
 
 
 % Output variables
-desired_relative_state = [x(1),y(1),z(1),dx(1),dy(1),dz(1)];
+% desired_relative_state = [x(1),y(1),z(1),dx(1),dy(1),dz(1)];
 desired_acceleration = [0;fy;0];
 
 end

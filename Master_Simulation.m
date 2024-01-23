@@ -2,7 +2,7 @@
 close all
 
 %% Settings for dynamics simulation
-run_ID = 'DebuggingPID_Guidance_NoNAV_6000sRun';
+run_ID = 'NO_NAME';
 integrator = 'FE'; % 'FE' for forward Euler or 'RK4' for 4th order fixed
                    % time_step Runge-Kutta
 acceleration_model = 'kepler'; % 'kepler' for kepler orbit model or 'SH'
@@ -35,10 +35,10 @@ relative_state_chaser = [ % in CW reference frame centered at target
 %% Simulation constants
 simulation_time_step_large = 10; %s
 simulation_time_step_small = 0.3; %s
-time_out_time = 1000; %s
+time_out_time = 6000; %s
 
 RotatingEarth = false;
-controller = "PID";
+controller = "LQR";
 control_mode = "vel";
 
 %% Initial conditions states
@@ -74,6 +74,7 @@ relative_state_chaser_history = relative_state_chaser;
 desired_state_history = relative_state_chaser;
 
 running = true;
+final_time_steps = false;
 t = 0;
 while running
     
@@ -84,6 +85,11 @@ while running
         time_step = simulation_time_step_large;
     elseif mode == "Final"
         time_step = simulation_time_step_small;
+        if ~final_time_steps
+            time_out_time = t + 20 * simulation_time_step_small;
+            final_time_steps = true;
+            disp("switch to final steps")
+        end
     end
     disp("Mode: " + mode)
 
@@ -94,19 +100,11 @@ while running
     mean_motion = sqrt(mu/vecnorm(absolute_state_chaser(1:3))^3);
     
     % Navigation
-    % [relative_state_chaser, absolute_state_chaser] = navigation( ...
+    % [relative_state_chaser, absolute_state_chaser] = navigation_vbn( ...
     %     relative_state_chaser, ...
     %     absolute_state_chaser, ...
     %     absolute_state_target, ...
     %     control_force ...
-    %     );
-    % [relative_state_chaser, absolute_state_chaser] = navigation2( ...
-    %     relative_state_chaser, ...
-    %     absolute_state_chaser, ...
-    %     absolute_state_target, ...
-    %     control_force, ...
-    %     mass, ...
-    %     time_step ...
     %     );
     relative_state_chaser = ECI2CW(absolute_state_target, absolute_state_chaser - absolute_state_target);
 
@@ -117,6 +115,11 @@ while running
         mean_motion ...
         );
     desired_relative_state = desired_relative_state'; % Transpose to make it a column vector
+    if desired_relative_state(4) > 1
+        desired_relative_state(4) =  1;
+    elseif desired_relative_state(4) < -1
+        desired_relative_state(4) = -1;
+    end
     
     % desired_relative_state = [0;0;0;0;0;0];
     % desired_acceleration = [0;0;0];
