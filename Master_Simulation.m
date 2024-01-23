@@ -35,7 +35,7 @@ relative_state_chaser = [ % in CW reference frame centered at target
 %% Simulation constants
 simulation_time_step_large = 10; %s
 simulation_time_step_small = 0.3; %s
-time_out_time = 6000; %s
+time_out_time = 1000; %s
 
 RotatingEarth = false;
 controller = "PID";
@@ -85,6 +85,7 @@ while running
     elseif mode == "Final"
         time_step = simulation_time_step_small;
     end
+    disp("Mode: " + mode)
 
     if t >= time_out_time
         running = false;
@@ -132,7 +133,7 @@ while running
         mean_motion, ...
         control_mode ...
         );
-    control_force(1,1) = -control_force(1,1);
+    % control_force(1,1) = -control_force(1,1);
     
     disp("beginning time: " + t)
     disp("rel state: " + relative_state_chaser)

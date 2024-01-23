@@ -107,6 +107,7 @@ elseif (y0 >= pos_t(1,2)) && (y0 < pos_t(5,2)) % Closing phase
     mode = 'Closing';
 else
     mode = 'Final';
+    [x,y,z,dx,dy,dz] = [pos_t(end,1),pos_t(end,2),pos_t(end,3),0,0,0];
 end
 
 
