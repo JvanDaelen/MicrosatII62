@@ -108,7 +108,7 @@ while running
     %     time_step ...
     %     );
     relative_state_chaser = ECI2CW(absolute_state_target, absolute_state_chaser - absolute_state_target);
-
+    
     % Guidance
     [desired_relative_state, desired_acceleration, mode] = guidance( ...
         relative_state_chaser, ...
@@ -132,17 +132,17 @@ while running
         mean_motion, ...
         control_mode ...
         );
-    control_force(1,1) = -control_force(1,1);
+    % control_force(1,1) = -control_force(1,1);
     
     disp("beginning time: " + t)
     disp("rel state: " + relative_state_chaser)
     disp("desired rel state: " + desired_relative_state)
-    disp("control force: " + control_force)
+    % disp("control force: " + control_force)
     
     
     % Convert control force from CW reference frame to ECI
     control_force_ECI = CW2ECI(absolute_state_target, control_force);
-    disp("control force ECI: " + control_force_ECI)
+    % disp("control force ECI: " + control_force_ECI)
     disp("finished time: " + t)
 
     % Dynamics
