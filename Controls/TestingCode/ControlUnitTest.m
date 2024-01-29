@@ -1,14 +1,28 @@
-clear all
+close all
 
 relative_state_chaser = [0; 0; 0; 0; 0; 0];
-desired_relative_state = [0; 0; 0; 1; 1; 1];
+desired_relative_state = [1; 1; 1; .5; .5; .5];
 
-time_step = 0.3;
+time_step = 0.25;
 
 mass = 1;
 mean_motion = 1e-5;
+n = mean_motion;
 
-controller = "PID";
+A = [0     0   0    1    0   0; 
+    0     0   0    0    1   0;
+    0     0   0    0    0   1;
+    3*n^2 0   0    0    2*n 0;
+    0     0   0    -2*n 0   0;
+    0     0   -n^2 0    0   0];
+B = [0    0   0; 
+    0    0   0;
+    0    0   0;
+    1/mass  0   0;
+    0    1/mass 0;
+    0    0   1/mass];
+
+
 
 control_memory_variable = cell(0);
 close_system("SS_PID_Simulink.slx", 0)
@@ -17,41 +31,87 @@ close_system("VEL_SS_PID_Simulink.slx", 0)
 control_memory_variable = cell(0); % Variable to store controller initialization
 control_force_history = [0;0;0];
 time_history = [0];
-relative_state_chaser_history = relative_state_chaser;
+
+
+state_mem = relative_state_chaser;
+desired_mem = relative_state_chaser;
 
 t = 0;
-for i = 1:20
-    [control_force, control_memory_variable] = Control( ...
-    control_memory_variable, ...
-    relative_state_chaser, ...
-    desired_relative_state, ...
-    controller, ...
-    time_step, ...
-    mass, ...
-    mean_motion, ...
-    "vel"...
-    );
+t_mem = [t];
 
-    F = control_force;
-
-    old_vel = relative_state_chaser(4:6);
-    new_vel = relative_state_chaser(4:6) + F/mass * time_step;
+PID_poscontrol_memory_variable = cell(0); % Variable to store controller initialization
+PID_pos_state = relative_state_chaser;
+PID_pos_state_mem = desired_relative_state(4);
+for i = 1:20/time_step
+    if t >= 10
+        desired_relative_state = [2;2;2;0;0;0];
+    end
     
-    position_change = (old_vel + new_vel)/2 * time_step;
+    % PID pos mode
+    [F, PID_poscontrol_memory_variable] = Control( ...
+        PID_poscontrol_memory_variable, ...
+        PID_pos_state, ...
+        desired_relative_state, ...
+        "LQR", ...
+        time_step, ...
+        mass, ...
+        mean_motion, ...
+        "pos" ...
+        );
+    PID_pos_state = PID_pos_state + ( A * PID_pos_state + B * F ) * time_step;
+    disp(t)
+    disp(PID_pos_state(1))
+    disp(PID_pos_state(4))
+    PID_pos_state_mem = horzcat(PID_pos_state_mem, PID_pos_state(4));
     
-    relative_state_chaser(1:3) = relative_state_chaser(1:3) + position_change;
-    relative_state_chaser(4:6) = new_vel;
     
-    disp(relative_state_chaser)
-
-    % Save variables for plotting
-    control_force_history = horzcat(control_force_history, control_force);
-    relative_state_chaser_history = horzcat(relative_state_chaser_history, relative_state_chaser);
-    time_history = horzcat(time_history, t);
+    desired_mem = horzcat(desired_mem, desired_relative_state);
+    t_mem = horzcat(t_mem, t);
     t = t + time_step;
 end
 
-PlotResults(relative_state_chaser_history, control_force_history, "ControlUnitTest", time_history)
+figure_name = "Trajectory";
+figure('Name', figure_name)
 
-% close_system("SS_PID_Simulink.slx", 0)
-% close_system("VEL_SS_PID_Simulink.slx", 0)
+% Postion variable to plot
+plot(t_mem, desired_mem(4,:), 'r--')
+hold on
+grid on
+plot(t_mem, PID_pos_state_mem, 'b-')
+
+legend({ ...
+    'target', ...
+    'state', ...
+        },'Location','northeast')
+
+xlabel("time [s]")
+ylabel("vel [m/s]")
+
+% saveas(gcf, "PID_TestResult_Pos.png")
+
+
+% figure_name = "Forces";
+% figure('Name', figure_name)
+% 
+% % Postion variable to plot
+% t = 0:0.01:5;
+% 
+% plot(t, reference_force, 'b-')
+% hold on
+% grid on
+% plot(t, force_memory, 'r-')
+% 
+% 
+% 
+% legend({ ...
+%     'continues', ...
+%     'discretized', ...
+%     'continues avg', ...
+%     'discretized avg', ...
+%         },'Location','northeast')
+% 
+% xlabel("time [s]")
+% ylabel("pos  [m]")
+% 
+% saveas(gcf, "PID_Unit_For.png")
+

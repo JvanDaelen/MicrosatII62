@@ -2,7 +2,7 @@
 close all
 
 %% Settings for dynamics simulation
-run_ID = 'NO_NAME';
+run_ID = 'PID_FE';
 integrator = 'FE'; % 'FE' for forward Euler or 'RK4' for 4th order fixed
                    % time_step Runge-Kutta
 acceleration_model = 'kepler'; % 'kepler' for kepler orbit model or 'SH'
@@ -35,10 +35,10 @@ relative_state_chaser = [ % in CW reference frame centered at target
 %% Simulation constants
 simulation_time_step_large = 10; %s
 simulation_time_step_small = 0.3; %s
-time_out_time = 6000; %s
+time_out_time = 1821; %s
 
 RotatingEarth = false;
-controller = "LQR";
+controller = "PID";
 control_mode = "vel";
 
 %% Initial conditions states
@@ -84,9 +84,11 @@ while running
     elseif mode == "Closing"
         time_step = simulation_time_step_large;
     elseif mode == "Final"
+        control_mode = "pos";
+        control_memory_variable = cell(0);
         time_step = simulation_time_step_small;
         if ~final_time_steps
-            time_out_time = t + 20 * simulation_time_step_small;
+            time_out_time = t + 5 * simulation_time_step_small;
             final_time_steps = true;
             disp("switch to final steps")
         end
@@ -173,4 +175,4 @@ while running
     t = t + time_step;
 end
 
-PlotResults(relative_state_chaser_history, control_force_history, run_ID, time_history, desired_state_history)
+PlotResults(relative_state_chaser_history, control_force_history, run_ID, time_history, desired_state_history, mass)

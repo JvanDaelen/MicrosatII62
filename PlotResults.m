@@ -1,4 +1,4 @@
-function [] = PlotResults(relative_state_chaser_history, control_force_history, run_ID, time, desired_state_history)
+function [] = PlotResults(relative_state_chaser_history, control_force_history, run_ID, time, desired_state_history, m)
 %PLOTRESULTS Function to plot simulation output
 %   Plots are made for 3D-trajectory, deltaV consumption, control force,
 %   position, velocity
@@ -27,8 +27,25 @@ xlabel("X pos [m]")
 ylabel("Y pos [m]")
 zlabel("Z pos [m]")
 scatter3([0],[0],[0],'filled', 'r')
-saveas(gcf, folder_name + figure_name + ".png")
+saveas(gcf, folder_name + figure_name + "_" + run_ID + ".png")
 
+
+%% 2D-trajectory plot
+figure_name = "Trajectory2D";
+figure('Name', figure_name)
+
+% Postion variable to plot
+X = relative_state_chaser_history(1,:);
+Y = relative_state_chaser_history(2,:);
+Z = relative_state_chaser_history(3,:);
+
+plot(X, Y)
+hold on
+grid on
+xlabel("X pos [m]")
+ylabel("Y pos [m]")
+scatter([0],[0],'filled', 'r')
+saveas(gcf, folder_name + figure_name + "_" + run_ID + ".png")
 
 %% Plot positions
 figure_name = "Positions";
@@ -43,7 +60,7 @@ for ii=1:3
     title(suplotTitle{ii})
 end
 xlabel("time [s]")
-saveas(gcf, folder_name + figure_name + ".png")
+saveas(gcf, folder_name + figure_name + "_" + run_ID + ".png")
 
 
 %% Plot velocities
@@ -65,7 +82,7 @@ for ii=1:3
             },'Location','northeast')
 end
 xlabel("time [s]")
-saveas(gcf, folder_name + figure_name + ".png")
+saveas(gcf, folder_name + figure_name + "_" + run_ID + ".png")
 
 
 %% 3D-trajectory plot
@@ -83,5 +100,27 @@ for ii=1:3
     title(suplotTitle{ii})
 end
 xlabel("time [s]")
-saveas(gcf, folder_name + figure_name + ".png")
+saveas(gcf, folder_name + figure_name + "_" + run_ID + ".png")
+
+%% Plot velocities
+figure_name = "deltaV";
+f1 = figure('Name', figure_name);
+
+dVx = cumtrapz(abs(control_force_history(1, :))) / m;
+dVy = cumtrapz(abs(control_force_history(2, :))) / m;
+dVz = cumtrapz(abs(control_force_history(3, :))) / m;
+dV = [dVx;dVy;dVz];
+
+suplotTitle = {'dVx', 'dVy', 'dVz'}; 
+for ii=1:3
+    subplot(3,1,ii);
+    plot(time, dV(ii, :))
+    hold on
+    grid on
+    ylabel(suplotTitle{ii} + " [m/s]")
+    title(suplotTitle{ii})
+end
+xlabel("time [s]")
+saveas(gcf, folder_name + figure_name + "_" + run_ID + ".png")
+
 end
