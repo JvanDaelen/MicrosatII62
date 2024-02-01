@@ -1,0 +1,54 @@
+function [noisy_relative_state] = LIDARSensor(clean_relative_state)
+%LIDARSENSOR this function converts clean relative states from dynamics
+%into noisy measure states
+%   The sensor uses a FLASH LIDAR system with a variable pixel size, FOV
+%   and range dependent range accuracy
+
+% Calculate the true range
+true_pos = clean_relative_state(1:3);
+true_range = norm(true_pos);
+
+% Add in noise
+absolute_accuracy = 2.8e-2; % m 
+range_dependent_accuracy = 0.01; % a fraction of the range
+range_rms_noise = absolute_accuracy + range_dependent_accuracy * true_range;
+
+noisy_range = true_range + range_rms_noise * randn();
+
+
+% Calculate relative elivation
+Fov = 60 * pi/180; %RAD
+number_of_pixels = 128;
+angular_resolution = G
+
+elevation_noise_rms = 0.4e-3; % RAD
+true_elevation = asin(true_pos(1)/true_range); % RAD
+noisy_elevation = true_elevation + elevation_noise_rms * randn();
+
+% Calculate relative azimuth
+azimuth_noise_rms = 0.4e-3; % RAD
+projected_range = cos(true_elevation) * true_range;
+true_azimuth = asin(true_pos(2)/projected_range); % RAD
+noisy_azimuth = true_azimuth + azimuth_noise_rms * randn();
+
+% Reconstruct relative position
+noisy_pos = [
+    sin(noisy_elevation) * noisy_range;
+    cos(noisy_elevation) * sin(noisy_azimuth) * noisy_range;
+    cos(noisy_elevation) * cos(noisy_azimuth) * noisy_range * sign(true_pos(3));
+    ];
+
+% Add noise to velocity
+true_vel = clean_relative_state(4:6);
+vel_noise = 0.7e-3; % m/s
+
+noisy_vel = [
+    true_vel(1) + vel_noise * randn();
+    true_vel(2) + vel_noise * randn();
+    true_vel(3) + vel_noise * randn()
+    ];
+
+% combine position and velocity vecotrs
+noisy_relative_state = vertcat(noisy_pos, noisy_vel);
+end
+

@@ -1,0 +1,51 @@
+
+ind = 1;
+for j = -15:1:0
+    true_rel_state = [0;0.5*j;j;1;1;-1];
+    true_state_history(:, j+16) = true_rel_state;
+    for i = 1:10
+        noisy_state = LIDARSensor(true_rel_state);
+        relative_state_chaser_history(:, ind) = noisy_state;
+        ind = ind + 1;
+    end
+end
+
+%% 3D-trajectory plot
+figure_name = "Trajectory";
+figure('Name', figure_name)
+
+% Postion variable to plot
+X = relative_state_chaser_history(1,:);
+Y = relative_state_chaser_history(2,:);
+Z = relative_state_chaser_history(3,:);
+
+scatter3(X,Y,Z)
+hold on
+grid on
+xlabel("X pos [m]")
+xlim([-20;2])
+ylabel("Y pos [m]")
+ylim([-20;20])
+zlabel("Z pos [m]")
+zlim([-20;20])
+scatter3(true_rel_state(1),true_rel_state(2),true_rel_state(3),'filled', 'r')
+scatter3(0,0,0,'filled', 'k')
+
+
+%% 3D-trajectory plot
+figure_name = "Velocity";
+figure('Name', figure_name)
+
+% Postion variable to plot
+X = relative_state_chaser_history(4,:);
+Y = relative_state_chaser_history(5,:);
+Z = relative_state_chaser_history(6,:);
+
+scatter3(X,Y,Z)
+hold on
+grid on
+xlabel("X vel [m/s]")
+ylabel("Y vel [m/s]")
+zlabel("Z vel [m/s]")
+scatter3(true_rel_state(4),true_rel_state(5),true_rel_state(6),'filled', 'r')
+scatter3(0,0,0,'filled', 'k')
