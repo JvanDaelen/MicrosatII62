@@ -35,7 +35,6 @@ relative_state_chaser = [ % in CW reference frame centered at target
 %% Simulation constants
 simulation_time_step_large = 10; %s
 simulation_time_step_small = 0.3; %s
-time_out_time = 10000; %s
 time_out_time = inf; %s
 
 RotatingEarth = false;
@@ -182,7 +181,6 @@ while running
 
     else 
         relative_state_chaser = ECI2CW(absolute_state_target, absolute_state_chaser - absolute_state_target);
-
         % Guidance
         [desired_relative_state, desired_acceleration, mode] = guidance( ...
             relative_state_chaser, ...
