@@ -2,7 +2,7 @@
 close all
 
 %% Settings for dynamics simulation
-run_ID = 'PID_FE';
+run_ID = 'Final_Run_NoNav_PID';
 integrator = 'FE'; % 'FE' for forward Euler or 'RK4' for 4th order fixed
                    % time_step Runge-Kutta
 acceleration_model = 'kepler'; % 'kepler' for kepler orbit model or 'SH'
@@ -36,9 +36,10 @@ relative_state_chaser = [ % in CW reference frame centered at target
 simulation_time_step_large = 10; %s
 simulation_time_step_small = 0.3; %s
 time_out_time = 10000; %s
+time_out_time = inf; %s
 
 RotatingEarth = false;
-controller = "PID";
+controller = "LQR";
 control_mode = "vel";
 
 %% Initial conditions states
