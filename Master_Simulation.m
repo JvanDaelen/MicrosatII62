@@ -35,7 +35,7 @@ relative_state_chaser = [ % in CW reference frame centered at target
 %% Simulation constants
 simulation_time_step_large = 10; %s
 simulation_time_step_small = 0.3; %s
-time_out_time = 1821; %s
+time_out_time = 10000; %s
 
 RotatingEarth = false;
 controller = "PID";
@@ -100,7 +100,7 @@ while running
         control_memory_variable = cell(0);
         time_step = simulation_time_step_small;
         if ~final_time_steps
-            time_out_time = t + 5 * simulation_time_step_small;
+            time_out_time = t + 1000 * simulation_time_step_small;
             final_time_steps = true;
             disp("switch to final steps")
         end
