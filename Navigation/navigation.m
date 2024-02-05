@@ -1,34 +1,51 @@
-function [relative_state_chaser, absolute_state_chaser] = navigation(relative_state_chaser, absolute_state_chaser, absolute_state_target, control_force)
-    % System dynamics matrices
-    % A = eye(6); %+ randn(6) * 0.1;  % State transition matrix (with some randomness)
-    A = [1 1 1 1 1 1; 0 0 0 0 0 0; 0 0 0 0 0 0; 0 0 0 0 0 0; 0 0 0 0 0 0; 0 0 0 0 0 0];
-    B = [zeros(3); zeros(3)];      % Control input matrix (assuming control_force is [F_x, F_y, F_z])
-    H = eye(6);                   % Measurement matrix
+function [relative_state_chaser, absolute_state_chaser, P] = navigation(relative_state_chaser, absolute_state_chaser, absolute_state_target, control_force, P)
+    %% Kalman Filter Initialisation
 
-    % Process and measurement noise covariances
-    Q = diag([0.01, 0.01, 0.01, 0.001, 0.001, 0.001]);  % Process noise covariance
-    R = diag([0.1, 0.1, 0.1, 0.01, 0.01, 0.01]);        % Measurement noise covariance
+    dt = 1e-3;
 
-    % Prediction Step
-    x_hat_minus = A * absolute_state_chaser;          % Predicted absolute state
-    P_minus = A * Q * A' + Q;                          % Predicted error covariance
+    A = [0 0 0 dt 0 0;
+        0 1 0 0 dt 0;
+        0 0 0 0 0 dt;
+        0 0 0 0 0 0;
+        0 0 0 0 1 0;
+        0 0 0 0 0 0]; % State Transition Matrix
 
-    % Update Step (using the relative state as a measurement)
-    K = P_minus * H' / (H * P_minus * H' + R);         % Kalman gain
-    x_hat = x_hat_minus + K * (relative_state_chaser - H * x_hat_minus);  % Updated absolute state estimate
-    P = (eye(6) - K * H) * P_minus;                     % Updated error covariance
+    B = [0 0 0;
+        0 dt^2/2 0;
+        0 0 0;
+        0 0 0;
+        0 dt^3 0;
+        0 0 0]; % Control Matrix
 
-    % Apply control force to the chaser
-    x_hat = x_hat + B * control_force;
+    Q = diag([0, 0, 0, 5e-5, 5e-5, 5e-5]); % Process Noise Covariance Matrix
 
-    % Compute the updated relative state
-    relative_state_chaser = x_hat - absolute_state_target;
+    R = [6e-2 0 0 0 0 0;
+        0 6e-2 0 0 0 0;
+        0 0 6e-2 0 0 0;
+        0 0 0 1 0 0;
+        0 0 0 0 1 0;
+        0 0 0 0 0 1]; % Measurement Covariance Matrix - Error in measurement
 
-    % Output the updated relative state and absolute state of the chaser
-    relative_state_chaser = relative_state_chaser(:);   % Ensure column vector
-    disp('relative_state_chaser=: ')
-    disp(relative_state_chaser);
-    absolute_state_chaser = x_hat(:);
-    disp('absolute_state_chaser=: ')
-    disp(absolute_state_chaser);
+    H = eye(6); % Measurement Noise Matrix
+
+    %% Implementation of the Kalman Filter
+    
+    relative_state_chaser_measured = LIDARSensor(relative_state_chaser);
+    
+    x_hat = relative_state_chaser;
+    
+    % Time update (propagation)
+    x_hat_minus = (A * x_hat) + B * control_force; 
+    P_minus = (A * P * A') + Q;
+            
+    % Measurement update (correction)
+    y = relative_state_chaser_measured - (H * x_hat_minus);
+    S = (H * P_minus * H') + R;
+    K = P_minus * H'/S;
+    x_hat = x_hat_minus + (K * y);
+    P = (eye(size(P)) - (K * H)) * P_minus;
+    
+    relative_state_chaser = x_hat;
+    
+    absolute_state_chaser = relative_state_chaser + absolute_state_target;
 end
